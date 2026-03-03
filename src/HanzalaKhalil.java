@@ -5,15 +5,25 @@ public class HanzalaKhalil {
 
     static final int CANVAS_WIDTH = 600;
     static final int CANVAS_HEIGHT = 800;
+
     static final int INTERCEPTOR_WIDTH = 80;
     static final int INTERCEPTOR_HEIGHT = 80;
+
+    static final int ENEMY_WIDTH = 80;
+    static final int ENEMY_HEIGHT = 80;
+
+    static final double ENEMY_SPEED = 3.0;
+
     static final int BULLET_WIDTH = 5;
     static final int BULLET_HEIGHT = 20;
+
+    static final int SHOOT_COOLDOWN = 10;
 
     static int maxBullets = 50;
     static double[] bulletX = new double[maxBullets];
     static double[] bulletY = new double[maxBullets];
     static boolean[] bulletActive = new boolean[maxBullets];
+    static boolean[] bulletDirection = new boolean[maxBullets];
 
     static double[] enemyX = { 90.0, 230.0, 370.0, 510.0, 90.0, 230.0, 370.0, 510.0 };
     static double[] enemyY = { 720.0, 720.0, 720.0, 720.0, 620.0, 620.0, 620.0, 620.0 };
@@ -25,7 +35,7 @@ public class HanzalaKhalil {
 
     static int FPS = 20;
     static double speed = 20.0;
-    static int shootCooldown = 0;
+    static int shootCounter = 0;
 
     public static void main(String[] args) {
 
@@ -62,16 +72,9 @@ public class HanzalaKhalil {
 
             StdDraw.picture(interceptorX, interceptorY, "../assets/interceptor.png", INTERCEPTOR_WIDTH,
                     INTERCEPTOR_HEIGHT);
-            for (int i = 0; i < maxBullets; i++) {
-                if (bulletActive[i]) {
-                    StdDraw.picture(bulletX[i], bulletY[i], "../assets/bullet.png", BULLET_WIDTH, BULLET_HEIGHT);
-                    bulletY[i] += BULLET_HEIGHT;
-                    if (bulletY[i] > 800) {
-                        bulletActive[i] = false;
-                    }
 
-                }
-            }
+            bulletMovement();
+
             StdDraw.show();
             StdDraw.pause(1000 / FPS);
 
@@ -79,7 +82,7 @@ public class HanzalaKhalil {
                 typedKey = StdDraw.nextKeyTyped();
                 switch (typedKey) {
                     case '\n':
-                        //playGame();
+                        playGame();
                         break;
                     case 'a', 'A':
                         if (FPS > 5) {
@@ -106,19 +109,85 @@ public class HanzalaKhalil {
                 }
             }
 
-            moveInterceptor();
+            interceptorMovement();
 
         }
 
     }
 
+    public static void playGame() {
+        while (true) {
 
+            StdDraw.clear();
+            StdDraw.picture(300, 400, "../assets/background.png", CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    public static void moveInterceptor() {
+            for (int i = 0; i < 8; i++) {
+                if (enemyActive[i]) {
+                    StdDraw.picture(enemyX[i], enemyY[i], "../assets/enemyFighter.png", ENEMY_WIDTH, ENEMY_HEIGHT);
 
-        if (shootCooldown > 0) {
-                shootCooldown--;
+                    if (i == 3 || i == 7) {
+                        if (enemyDirection[i]) {
+                            enemyX[i] += ENEMY_SPEED;
+                        } else {
+                            enemyX[i] -= ENEMY_SPEED;
+                        }
+
+                    }
+
+                    if (enemyX[i] + (ENEMY_WIDTH / 2) >= 600) {
+                        enemyX[i]= 600 - (ENEMY_WIDTH/2);
+                        if (i < 4) {
+                            for (int j = 0; j < 4; j++) {
+                                enemyDirection[j] = false;
+                            }
+                        } else {
+                            for (int j = 4; j < 8; j++) {
+                                enemyDirection[j] = false;
+                            }
+                        }
+
+                    } else if (enemyX[i] - (ENEMY_WIDTH / 2) <= 0) {
+                        enemyX[i]= (ENEMY_WIDTH/2);
+                        if (i < 4) {
+                            for (int j = 0; j < 4; j++) {
+                                enemyDirection[j] = true;
+                            }
+                        } else {
+                            for (int j = 4; j < 8; j++) {
+                                enemyDirection[j] = true;
+                            }
+                        }
+                    }
+
+                    if (i != 3 && i != 7) {
+                        if (enemyDirection[i]) {
+                            enemyX[i] += ENEMY_SPEED;
+                        } else {
+                            enemyX[i] -= ENEMY_SPEED;
+                        }
+
+                    }
+                }
             }
+
+            StdDraw.picture(interceptorX, interceptorY, "../assets/interceptor.png", INTERCEPTOR_WIDTH, INTERCEPTOR_HEIGHT);
+
+            bulletMovement();
+
+            StdDraw.show();
+            StdDraw.pause(1000 / FPS);
+
+            interceptorMovement();
+
+        }
+
+    }
+
+    public static void interceptorMovement() {
+
+        if (shootCounter > 0) {
+            shootCounter--;
+        }
 
         if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_UP) && interceptorY + (INTERCEPTOR_HEIGHT / 2) < 800) {
             interceptorY += speed;
@@ -129,7 +198,7 @@ public class HanzalaKhalil {
         if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_DOWN) && interceptorY - (INTERCEPTOR_HEIGHT / 2) > 0) {
             interceptorY -= speed;
             if (interceptorY - (INTERCEPTOR_HEIGHT / 2) < 0) {
-                interceptorY = 0 + (INTERCEPTOR_HEIGHT / 2);
+                interceptorY = (INTERCEPTOR_HEIGHT / 2);
             }
         }
         if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_RIGHT) && interceptorX + (INTERCEPTOR_WIDTH / 2) < 600) {
@@ -141,21 +210,48 @@ public class HanzalaKhalil {
         if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_LEFT) && interceptorX - (INTERCEPTOR_WIDTH / 2) > 0) {
             interceptorX -= speed;
             if (interceptorX - (INTERCEPTOR_WIDTH / 2) < 0) {
-                interceptorX = 0 + (INTERCEPTOR_WIDTH / 2);
+                interceptorX = (INTERCEPTOR_WIDTH / 2);
             }
         }
 
-        if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_SPACE) && shootCooldown == 0) {
+        if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_SPACE) && shootCounter == 0) {
             for (int i = 0; i < maxBullets; i++) {
                 if (!bulletActive[i]) {
                     bulletActive[i] = true;
                     bulletX[i] = interceptorX;
                     bulletY[i] = interceptorY;
-                    shootCooldown = 10;
+                    bulletDirection[i] = true;
+                    shootCounter = SHOOT_COOLDOWN;
                     break;
                 }
             }
 
         }
     }
+
+    public static void bulletMovement() {
+
+        for (int i = 0; i < maxBullets; i++) {
+            if (bulletActive[i]) {
+
+                if (bulletDirection[i]) {
+                    StdDraw.picture(bulletX[i], bulletY[i], "../assets/bullet.png", BULLET_WIDTH, BULLET_HEIGHT);
+                    bulletY[i] += BULLET_HEIGHT;
+                    if (bulletY[i] > 800) {
+                        bulletActive[i] = false;
+                    }
+
+                } else {
+                    StdDraw.picture(bulletX[i], bulletY[i], "../assets/enemyBullet.png", BULLET_WIDTH,
+                            BULLET_HEIGHT);
+                    bulletY[i] -= BULLET_HEIGHT;
+                    if (bulletY[i] < 0) {
+                        bulletActive[i] = false;
+                    }
+                }
+
+            }
+        }
+    }
+
 }

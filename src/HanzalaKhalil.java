@@ -1,8 +1,5 @@
 // Name: Hanzala khalil
 // ID: 2025400279
-
-import java.util.Random;
-
 public class HanzalaKhalil {
 
     static final int CANVAS_WIDTH = 600;

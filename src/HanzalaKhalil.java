@@ -9,13 +9,22 @@ public class HanzalaKhalil {
     static final int INTERCEPTOR_WIDTH = 80;
     static final int INTERCEPTOR_HEIGHT = 80;
 
+    static final int HALF_INTERCEPTOR_WIDTH = INTERCEPTOR_WIDTH / 2;
+    static final int HALF_INTERCEPTOR_HEIGHT = INTERCEPTOR_HEIGHT / 2;
+
     static final int ENEMY_WIDTH = 80;
     static final int ENEMY_HEIGHT = 80;
+
+    static final int HALF_ENEMY_WIDTH = ENEMY_WIDTH / 2;
+    static final int HALF_ENEMY_HEIGHT = ENEMY_HEIGHT / 2;
 
     static final double ENEMY_SPEED = 3.0;
 
     static final int BULLET_WIDTH = 5;
     static final int BULLET_HEIGHT = 20;
+
+    static final int HALF_BULLET_WIDTH = BULLET_WIDTH / 2;
+    static final int HALF_BULLET_HEIGHT = BULLET_HEIGHT / 2;
 
     static final int SHOOT_COOLDOWN = 10;
 
@@ -135,7 +144,7 @@ public class HanzalaKhalil {
                     }
 
                     if (enemyX[i] + (ENEMY_WIDTH / 2) >= 600) {
-                        enemyX[i]= 600 - (ENEMY_WIDTH/2);
+                        enemyX[i] = 600 - (ENEMY_WIDTH / 2);
                         if (i < 4) {
                             for (int j = 0; j < 4; j++) {
                                 enemyDirection[j] = false;
@@ -147,7 +156,7 @@ public class HanzalaKhalil {
                         }
 
                     } else if (enemyX[i] - (ENEMY_WIDTH / 2) <= 0) {
-                        enemyX[i]= (ENEMY_WIDTH/2);
+                        enemyX[i] = (ENEMY_WIDTH / 2);
                         if (i < 4) {
                             for (int j = 0; j < 4; j++) {
                                 enemyDirection[j] = true;
@@ -170,7 +179,8 @@ public class HanzalaKhalil {
                 }
             }
 
-            StdDraw.picture(interceptorX, interceptorY, "../assets/interceptor.png", INTERCEPTOR_WIDTH, INTERCEPTOR_HEIGHT);
+            StdDraw.picture(interceptorX, interceptorY, "../assets/interceptor.png", INTERCEPTOR_WIDTH,
+                    INTERCEPTOR_HEIGHT);
 
             bulletMovement();
 
@@ -178,6 +188,8 @@ public class HanzalaKhalil {
             StdDraw.pause(1000 / FPS);
 
             interceptorMovement();
+
+            checkCollisions();
 
         }
 
@@ -254,4 +266,25 @@ public class HanzalaKhalil {
         }
     }
 
+    public static void checkCollisions() {
+        for (int i = 0; i < maxBullets; i++) {
+            if (bulletActive[i]) {
+                if (bulletDirection[i]) {
+                    for (int j = 0; j < 8; j++) {
+                        if (enemyActive[j]) {
+                            if (bulletX[i] > enemyX[j] - HALF_ENEMY_WIDTH &&
+                                    bulletX[i] < enemyX[j] + HALF_ENEMY_WIDTH &&
+                                    bulletY[i] > enemyY[j] - HALF_ENEMY_HEIGHT &&
+                                    bulletY[i] < enemyY[j] + HALF_ENEMY_HEIGHT) {
+
+                                bulletActive[i] = false;
+                                enemyActive[j] = false;
+                                System.out.println("BOOM");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

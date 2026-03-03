@@ -1,6 +1,8 @@
 // Name: Hanzala khalil
 // ID: 2025400279
 
+import java.util.Random;
+
 public class HanzalaKhalil {
 
     static final int CANVAS_WIDTH = 600;
@@ -26,7 +28,11 @@ public class HanzalaKhalil {
     static final int HALF_BULLET_WIDTH = BULLET_WIDTH / 2;
     static final int HALF_BULLET_HEIGHT = BULLET_HEIGHT / 2;
 
-    static final int SHOOT_COOLDOWN = 10;
+    static final int ENEMY_SHOOT_COOLDOWN = 30;
+    static final int INTERCEPTOR_SHOOT_COOLDOWN = 15;
+
+    static int[] enemyShootCounter = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    static int interceptorShootCounter = 0;
 
     static int maxBullets = 50;
     static double[] bulletX = new double[maxBullets];
@@ -44,7 +50,7 @@ public class HanzalaKhalil {
 
     static int FPS = 20;
     static double speed = 20.0;
-    static int shootCounter = 0;
+    static int lives = 3;
 
     public static void main(String[] args) {
 
@@ -130,53 +136,11 @@ public class HanzalaKhalil {
             StdDraw.clear();
             StdDraw.picture(300, 400, "../assets/background.png", CANVAS_WIDTH, CANVAS_HEIGHT);
 
-            for (int i = 0; i < 8; i++) {
-                if (enemyActive[i]) {
-                    StdDraw.picture(enemyX[i], enemyY[i], "../assets/enemyFighter.png", ENEMY_WIDTH, ENEMY_HEIGHT);
+            enemyMovement();
 
-                    if (i == 3 || i == 7) {
-                        if (enemyDirection[i]) {
-                            enemyX[i] += ENEMY_SPEED;
-                        } else {
-                            enemyX[i] -= ENEMY_SPEED;
-                        }
-
-                    }
-
-                    if (enemyX[i] + (ENEMY_WIDTH / 2) >= 600) {
-                        enemyX[i] = 600 - (ENEMY_WIDTH / 2);
-                        if (i < 4) {
-                            for (int j = 0; j < 4; j++) {
-                                enemyDirection[j] = false;
-                            }
-                        } else {
-                            for (int j = 4; j < 8; j++) {
-                                enemyDirection[j] = false;
-                            }
-                        }
-
-                    } else if (enemyX[i] - (ENEMY_WIDTH / 2) <= 0) {
-                        enemyX[i] = (ENEMY_WIDTH / 2);
-                        if (i < 4) {
-                            for (int j = 0; j < 4; j++) {
-                                enemyDirection[j] = true;
-                            }
-                        } else {
-                            for (int j = 4; j < 8; j++) {
-                                enemyDirection[j] = true;
-                            }
-                        }
-                    }
-
-                    if (i != 3 && i != 7) {
-                        if (enemyDirection[i]) {
-                            enemyX[i] += ENEMY_SPEED;
-                        } else {
-                            enemyX[i] -= ENEMY_SPEED;
-                        }
-
-                    }
-                }
+            for (int i = 0; i < lives; i++) {
+                StdDraw.setPenColor(StdDraw.RED);
+                StdDraw.picture(570 - (i * 40), 770, "../assets/heart.png", 30, 30);
             }
 
             StdDraw.picture(interceptorX, interceptorY, "../assets/interceptor.png", INTERCEPTOR_WIDTH,
@@ -197,8 +161,8 @@ public class HanzalaKhalil {
 
     public static void interceptorMovement() {
 
-        if (shootCounter > 0) {
-            shootCounter--;
+        if (interceptorShootCounter > 0) {
+            interceptorShootCounter--;
         }
 
         if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_UP) && interceptorY + (INTERCEPTOR_HEIGHT / 2) < 800) {
@@ -226,18 +190,86 @@ public class HanzalaKhalil {
             }
         }
 
-        if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_SPACE) && shootCounter == 0) {
+        if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_SPACE) && interceptorShootCounter == 0) {
             for (int i = 0; i < maxBullets; i++) {
                 if (!bulletActive[i]) {
                     bulletActive[i] = true;
                     bulletX[i] = interceptorX;
-                    bulletY[i] = interceptorY;
+                    bulletY[i] = interceptorY + HALF_INTERCEPTOR_HEIGHT;
                     bulletDirection[i] = true;
-                    shootCounter = SHOOT_COOLDOWN;
+                    interceptorShootCounter = INTERCEPTOR_SHOOT_COOLDOWN;
                     break;
                 }
             }
 
+        }
+    }
+
+    public static void enemyMovement() {
+        for (int i = 0; i < 8; i++) {
+            if (enemyShootCounter[i] > 0) {
+                enemyShootCounter[i]--;
+            }
+
+            if (enemyActive[i]) {
+                StdDraw.picture(enemyX[i], enemyY[i], "../assets/enemyFighter.png", ENEMY_WIDTH, ENEMY_HEIGHT);
+
+                if (i == 3 || i == 7) {
+                    if (enemyDirection[i]) {
+                        enemyX[i] += ENEMY_SPEED;
+                    } else {
+                        enemyX[i] -= ENEMY_SPEED;
+                    }
+
+                }
+
+                if (enemyX[i] + (ENEMY_WIDTH / 2) >= 600) {
+                    enemyX[i] = 600 - (ENEMY_WIDTH / 2);
+                    if (i < 4) {
+                        for (int j = 0; j < 4; j++) {
+                            enemyDirection[j] = false;
+                        }
+                    } else {
+                        for (int j = 4; j < 8; j++) {
+                            enemyDirection[j] = false;
+                        }
+                    }
+
+                } else if (enemyX[i] - (ENEMY_WIDTH / 2) <= 0) {
+                    enemyX[i] = (ENEMY_WIDTH / 2);
+                    if (i < 4) {
+                        for (int j = 0; j < 4; j++) {
+                            enemyDirection[j] = true;
+                        }
+                    } else {
+                        for (int j = 4; j < 8; j++) {
+                            enemyDirection[j] = true;
+                        }
+                    }
+                }
+
+                if (i != 3 && i != 7) {
+                    if (enemyDirection[i]) {
+                        enemyX[i] += ENEMY_SPEED;
+                    } else {
+                        enemyX[i] -= ENEMY_SPEED;
+                    }
+
+                }
+                for (int j = 0; j < maxBullets; j++) {
+                    if (Math.random() < 0.001 && enemyShootCounter[i] == 0) {
+
+                        if (!bulletActive[j]) {
+                            bulletActive[j] = true;
+                            bulletX[j] = enemyX[i];
+                            bulletY[j] = enemyY[i] - HALF_ENEMY_HEIGHT;
+                            bulletDirection[j] = false;
+                            enemyShootCounter[i] = ENEMY_SHOOT_COOLDOWN;
+                        }
+                    }
+                }
+
+            }
         }
     }
 
@@ -272,15 +304,28 @@ public class HanzalaKhalil {
                 if (bulletDirection[i]) {
                     for (int j = 0; j < 8; j++) {
                         if (enemyActive[j]) {
-                            if (bulletX[i] > enemyX[j] - HALF_ENEMY_WIDTH &&
-                                    bulletX[i] < enemyX[j] + HALF_ENEMY_WIDTH &&
-                                    bulletY[i] > enemyY[j] - HALF_ENEMY_HEIGHT &&
-                                    bulletY[i] < enemyY[j] + HALF_ENEMY_HEIGHT) {
+                            if (bulletX[i] + HALF_BULLET_WIDTH > enemyX[j] - HALF_ENEMY_WIDTH &&
+                                    bulletX[i] - HALF_BULLET_WIDTH < enemyX[j] + HALF_ENEMY_WIDTH &&
+                                    bulletY[i] + HALF_BULLET_HEIGHT > enemyY[j] - HALF_ENEMY_HEIGHT &&
+                                    bulletY[i] - HALF_BULLET_HEIGHT < enemyY[j] + HALF_ENEMY_HEIGHT) {
 
                                 bulletActive[i] = false;
                                 enemyActive[j] = false;
                                 System.out.println("BOOM");
                             }
+                        }
+                    }
+                } else {
+                    if (bulletActive[i]) {
+                        if (bulletX[i] + HALF_BULLET_WIDTH > interceptorX - HALF_INTERCEPTOR_WIDTH &&
+                                bulletX[i] - HALF_BULLET_WIDTH < interceptorX + HALF_INTERCEPTOR_WIDTH &&
+                                bulletY[i] + HALF_BULLET_HEIGHT > interceptorY - HALF_INTERCEPTOR_HEIGHT &&
+                                bulletY[i] - HALF_BULLET_HEIGHT < interceptorY + HALF_INTERCEPTOR_HEIGHT) {
+
+                            bulletActive[i] = false;
+                            lives--;
+                            System.out.println("Ouch! Lives left: " + lives);
+                            continue;
                         }
                     }
                 }

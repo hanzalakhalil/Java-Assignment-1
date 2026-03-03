@@ -239,7 +239,7 @@ public class HanzalaKhalil {
                     enemyX[i] = (ENEMY_WIDTH / 2);
                     if (i < 4) {
                         for (int j = 0; j < 4; j++) {
-                            enemyDirection[j] = true;
+                            enemyDirection[j] = true; 
                         }
                     } else {
                         for (int j = 4; j < 8; j++) {

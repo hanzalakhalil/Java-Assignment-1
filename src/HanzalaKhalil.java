@@ -28,6 +28,9 @@ public class HanzalaKhalil {
     static final int ENEMY_SHOOT_COOLDOWN = 30;
     static final int INTERCEPTOR_SHOOT_COOLDOWN = 15;
 
+    static final double ENEMY_SHOOT_CHANCE = 0.001;
+    static final double LIFE_DROP_CHANCE = 0.20;
+
     static int[] enemyShootCounter = { 0, 0, 0, 0, 0, 0, 0, 0 };
     static int interceptorShootCounter = 0;
 
@@ -36,6 +39,10 @@ public class HanzalaKhalil {
     static double[] bulletY = new double[maxBullets];
     static boolean[] bulletActive = new boolean[maxBullets];
     static boolean[] bulletDirection = new boolean[maxBullets];
+
+    static double[] lifeDropX = new double[5];
+    static double[] lifeDropY = new double[5];
+    static boolean[] lifeDropActive = new boolean[5];
 
     static double[] enemyX = { 90.0, 230.0, 370.0, 510.0, 90.0, 230.0, 370.0, 510.0 };
     static double[] enemyY = { 720.0, 720.0, 720.0, 720.0, 620.0, 620.0, 620.0, 620.0 };
@@ -48,6 +55,7 @@ public class HanzalaKhalil {
     static int FPS = 20;
     static double speed = 20.0;
     static int lives = 3;
+    static int score = 0;
 
     public static void main(String[] args) {
 
@@ -135,6 +143,10 @@ public class HanzalaKhalil {
 
             enemyMovement();
 
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 20));
+            StdDraw.text(80, 770, "Score: " + score);
+
             for (int i = 0; i < lives; i++) {
                 StdDraw.setPenColor(StdDraw.RED);
                 StdDraw.picture(570 - (i * 40), 770, "../assets/heart.png", 30, 30);
@@ -144,6 +156,8 @@ public class HanzalaKhalil {
                     INTERCEPTOR_HEIGHT);
 
             bulletMovement();
+
+            lifeDropMovement();
 
             StdDraw.show();
             StdDraw.pause(1000 / FPS);
@@ -236,7 +250,7 @@ public class HanzalaKhalil {
                     enemyX[i] = (ENEMY_WIDTH / 2);
                     if (i < 4) {
                         for (int j = 0; j < 4; j++) {
-                            enemyDirection[j] = true; 
+                            enemyDirection[j] = true;
                         }
                     } else {
                         for (int j = 4; j < 8; j++) {
@@ -254,7 +268,7 @@ public class HanzalaKhalil {
 
                 }
                 for (int j = 0; j < maxBullets; j++) {
-                    if (Math.random() < 0.001 && enemyShootCounter[i] == 0) {
+                    if (Math.random() < ENEMY_SHOOT_CHANCE && enemyShootCounter[i] == 0) {
 
                         if (!bulletActive[j]) {
                             bulletActive[j] = true;
@@ -295,6 +309,28 @@ public class HanzalaKhalil {
         }
     }
 
+    public static void lifeDropMovement() {
+        for (int i = 0; i < lifeDropActive.length; i++) {
+            if (lifeDropActive[i]) {
+                StdDraw.picture(lifeDropX[i], lifeDropY[i], "../assets/heart.png", 30, 30);
+                lifeDropY[i] -= 5;
+
+                if (lifeDropX[i] > interceptorX - HALF_INTERCEPTOR_WIDTH &&
+                        lifeDropX[i] < interceptorX + HALF_INTERCEPTOR_WIDTH &&
+                        lifeDropY[i] > interceptorY - HALF_INTERCEPTOR_HEIGHT &&
+                        lifeDropY[i] < interceptorY + HALF_INTERCEPTOR_HEIGHT) {
+
+                    if (lives < 5)
+                        lives++;
+                    lifeDropActive[i] = false;
+                }
+
+                if (lifeDropY[i] < 0)
+                    lifeDropActive[i] = false;
+            }
+        }
+    }
+
     public static void checkCollisions() {
         for (int i = 0; i < maxBullets; i++) {
             if (bulletActive[i]) {
@@ -308,7 +344,18 @@ public class HanzalaKhalil {
 
                                 bulletActive[i] = false;
                                 enemyActive[j] = false;
-                                System.out.println("BOOM");
+                                score += 30;
+
+                                if (Math.random() < LIFE_DROP_CHANCE) {
+                                    for (int k = 0; k < lifeDropActive.length; k++) {
+                                        if (!lifeDropActive[k]) {
+                                            lifeDropX[k] = enemyX[j];
+                                            lifeDropY[k] = enemyY[j];
+                                            lifeDropActive[k] = true;
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

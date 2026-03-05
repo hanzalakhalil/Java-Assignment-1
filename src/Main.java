@@ -1,6 +1,6 @@
 // Name: Hanzala khalil
 // ID: 2025400279
-public class HanzalaKhalil {
+public class Main{
 
     static final int CANVAS_WIDTH = 600;
     static final int CANVAS_HEIGHT = 800;
@@ -20,8 +20,8 @@ public class HanzalaKhalil {
     static final double ENEMY_SPEED = 3.0;
 
     static final int BULLET_WIDTH = 5;
-    static final int BULLET_HEIGHT = 20;
-    static final int BULLET_SPEED = 10minor fixes;
+    static final int BULLET_HEIGHT = 22;
+    static final int BULLET_SPEED = 10;
 
     static final int HALF_BULLET_WIDTH = BULLET_WIDTH / 2;
     static final int HALF_BULLET_HEIGHT = BULLET_HEIGHT / 2;
@@ -31,7 +31,6 @@ public class HanzalaKhalil {
 
     static final double ENEMY_SHOOT_CHANCE = 0.001;
     static final double LIFE_DROP_CHANCE = 0.20;
-
 
     static int[] enemyShootCounter = { 0, 0, 0, 0, 0, 0, 0, 0 };
     static int interceptorShootCounter = 0;
@@ -50,6 +49,11 @@ public class HanzalaKhalil {
     static double[] enemyY = { 720.0, 720.0, 720.0, 720.0, 620.0, 620.0, 620.0, 620.0 };
     static boolean[] enemyActive = { true, true, true, true, true, true, true, true };
     static boolean[] enemyDirection = { true, true, true, true, true, true, true, true };
+
+    static double[] explosionX = new double[10];
+    static double[] explosionY = new double[10];
+    static int[] explosionTimer = new int[10];
+    static boolean[] explosionActive = new boolean[10];
 
     static int interceptorX = 300;
     static int interceptorY = 200;
@@ -77,8 +81,7 @@ public class HanzalaKhalil {
 
             StdDraw.clear();
             StdDraw.picture(300, 400, "../assets/background.png", CANVAS_WIDTH, CANVAS_HEIGHT);
-            StdDraw.picture(300, 550, "../assets/title.png", 400, 133);
-            StdDraw.setPenColor(StdDraw.LIGHT_GRAY);
+            StdDraw.picture(300, 550, "../assets/title.png", 400, 166);
 
             StdDraw.setPenColor(StdDraw.WHITE);
             StdDraw.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 30));
@@ -138,38 +141,91 @@ public class HanzalaKhalil {
     }
 
     public static void playGame() {
+        boolean isPaused = false;
+
         while (true) {
 
-            StdDraw.clear();
-            StdDraw.picture(300, 400, "../assets/background.png", CANVAS_WIDTH, CANVAS_HEIGHT);
-
-            enemyMovement();
-
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 20));
-            StdDraw.text(80, 770, "Score: " + score);
-
-            for (int i = 0; i < lives; i++) {
-                StdDraw.setPenColor(StdDraw.RED);
-                StdDraw.picture(570 - (i * 40), 770, "../assets/heart.png", 30, 30);
+            if (lives <= 0) {
+                endGameMenu("gameOver");
+                return;
+            } else if (score == 240) {
+                endGameMenu("victory");
+                return;
             }
 
-            StdDraw.picture(interceptorX, interceptorY, "../assets/interceptor.png", INTERCEPTOR_WIDTH,
-                    INTERCEPTOR_HEIGHT);
+            StdDraw.clear();
 
-            bulletMovement();
+            drawUI();
 
-            lifeDropMovement();
+            if (StdDraw.hasNextKeyTyped()) {
+                char key = StdDraw.nextKeyTyped();
+                if (isPaused) {
+                    if (key == '\n') {
+                        resetGame();
+                        menu();
+                    }
+                }
+                if (key == 'p' || key == 'P') {
+                    isPaused = !isPaused;
+                }
+            }
+
+            if (!isPaused) {
+                enemyMovement();
+
+                for (int i = 0; i < 10; i++) {
+                    if (explosionActive[i]) {
+                        if (explosionTimer[i] < 5) {
+                            StdDraw.picture(explosionX[i], explosionY[i], "../assets/explosionSmall.png", 60, 60);
+
+                        } else if (explosionTimer[i] < 10) {
+                            StdDraw.picture(explosionX[i], explosionY[i], "../assets/explosionBig.png", 80, 80);
+                            if (explosionTimer[i] == 9) {
+                                explosionActive[i] = false;
+                            }
+
+                        }
+                        explosionTimer[i]++;
+
+                    }
+                }
+
+                StdDraw.picture(interceptorX, interceptorY, "../assets/interceptor.png", INTERCEPTOR_WIDTH,
+                        INTERCEPTOR_HEIGHT);
+
+                bulletMovement();
+
+                lifeDropMovement();
+
+                interceptorMovement();
+
+                checkCollisions();
+
+            } else {
+                StdDraw.picture(300, 400, "../assets/paused.png", 429, 98);
+                StdDraw.setPenColor(StdDraw.WHITE);
+                StdDraw.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 30));
+                StdDraw.text(300, 300, "> Main Menu <");
+            }
 
             StdDraw.show();
+
             StdDraw.pause(1000 / FPS);
-
-            interceptorMovement();
-
-            checkCollisions();
-
         }
 
+    }
+
+    public static void drawUI() {
+        StdDraw.picture(300, 400, "../assets/background.png", CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 20));
+        StdDraw.text(80, 770, "Score: " + score);
+
+        for (int i = 0; i < lives; i++) {
+            StdDraw.setPenColor(StdDraw.RED);
+            StdDraw.picture(570 - (i * 40), 770, "../assets/heart.png", 30, 30);
+        }
     }
 
     public static void interceptorMovement() {
@@ -334,6 +390,7 @@ public class HanzalaKhalil {
     }
 
     public static void checkCollisions() {
+
         for (int i = 0; i < maxBullets; i++) {
             if (bulletActive[i]) {
                 if (bulletDirection[i]) {
@@ -346,13 +403,22 @@ public class HanzalaKhalil {
 
                                 bulletActive[i] = false;
                                 enemyActive[j] = false;
+                                for (int l = 0; l < 10; l++) {
+                                    if (!explosionActive[l]) {
+                                        explosionActive[l] = true;
+                                        explosionX[l] = enemyX[j];
+                                        explosionY[l] = enemyY[j];
+                                        explosionTimer[l] = 0;
+                                        break;
+                                    }
+                                }
                                 score += 30;
 
                                 if (Math.random() < LIFE_DROP_CHANCE) {
                                     for (int k = 0; k < lifeDropActive.length; k++) {
                                         if (!lifeDropActive[k]) {
                                             lifeDropX[k] = enemyX[j];
-                                            lifeDropY[k] = enemyY[j];
+                                            lifeDropY[k] = enemyY[j] - HALF_ENEMY_HEIGHT;
                                             lifeDropActive[k] = true;
                                             break;
                                         }
@@ -377,5 +443,122 @@ public class HanzalaKhalil {
                 }
             }
         }
+
+        for (int i = 0; i < 8; i++) {
+            if (enemyActive[i]) {
+                if (interceptorX + HALF_INTERCEPTOR_WIDTH > enemyX[i] - HALF_ENEMY_WIDTH &&
+                        interceptorX - HALF_INTERCEPTOR_WIDTH < enemyX[i] + HALF_ENEMY_WIDTH &&
+                        interceptorY + HALF_INTERCEPTOR_HEIGHT > enemyY[i] - HALF_ENEMY_HEIGHT &&
+                        interceptorY - HALF_INTERCEPTOR_HEIGHT < enemyY[i] + HALF_ENEMY_HEIGHT) {
+
+                    enemyActive[i] = false;
+                    lives--;
+                    for (int l = 0; l < 10; l++) {
+                        if (!explosionActive[l]) {
+                            explosionActive[l] = true;
+                            explosionX[l] = enemyX[i];
+                            explosionY[l] = enemyY[i];
+                            explosionTimer[l] = 0;
+                            break;
+                        }
+                    }
+                    score += 30;
+
+                    if (Math.random() < LIFE_DROP_CHANCE) {
+                        for (int k = 0; k < lifeDropActive.length; k++) {
+                            if (!lifeDropActive[k]) {
+                                lifeDropX[k] = enemyX[i];
+                                lifeDropY[k] = enemyY[i] - HALF_ENEMY_HEIGHT;
+                                lifeDropActive[k] = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    public static void endGameMenu(String result) {
+        boolean isRestartSelected = true; // Highlighting 'Restart' by default
+
+        while (true) {
+            StdDraw.clear();
+            StdDraw.picture(300, 400, "../assets/background.png", CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // 1. Draw the Title (Victory or Game Over)
+            if (result.equals("gameOver")) {
+                StdDraw.picture(300, 550, "../assets/gameOver.png", 400, 210);
+            } else if (result.equals("victory")) {
+                StdDraw.picture(300, 550, "../assets/victory.png", 400, 86);
+            }
+
+            // 2. Display the Final Score
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 30));
+            StdDraw.text(300, 420, "Score: " + score);
+
+            // 3. Draw Navigation Options
+            StdDraw.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 25));
+
+            // Restart Option
+            String restartText = isRestartSelected ? "> Restart <" : "Restart";
+            StdDraw.text(300, 350, restartText);
+
+            // End Game Option
+            String endText = !isRestartSelected ? "> End Game <" : "End Game";
+            StdDraw.text(300, 300, endText);
+
+            StdDraw.show();
+
+            // 4. Handle Navigation Input (Arrow Keys)
+            if (StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_UP) ||
+                    StdDraw.isKeyPressed(java.awt.event.KeyEvent.VK_DOWN)) {
+                isRestartSelected = !isRestartSelected;
+            }
+
+            // 5. Handle Selection Input (Enter Key)
+            if (StdDraw.hasNextKeyTyped()) {
+                if (StdDraw.nextKeyTyped() == '\n') {
+                    if (isRestartSelected) {
+                        resetGame();
+                        playGame();
+                        return;
+                    } else {
+                        System.exit(0);
+                    }
+                }
+            }
+            StdDraw.pause(100); // Prevents rapid flickering
+
+        }
+    }
+
+    public static void resetGame() {
+        lives = 3;
+        score = 0;
+        interceptorX = 300;
+        interceptorY = 200;
+
+        // Reset Enemies to their starting positions and make them active
+        double[] startX = { 90.0, 230.0, 370.0, 510.0, 90.0, 230.0, 370.0, 510.0 };
+        double[] startY = { 720.0, 720.0, 720.0, 720.0, 620.0, 620.0, 620.0, 620.0 };
+
+        for (int i = 0; i < 8; i++) {
+            enemyX[i] = startX[i];
+            enemyY[i] = startY[i];
+            enemyActive[i] = true;
+            enemyDirection[i] = true;
+            enemyShootCounter[i] = 0;
+        }
+
+        // Clear all bullets, life drops, and explosions
+        for (int i = 0; i < maxBullets; i++)
+            bulletActive[i] = false;
+        for (int i = 0; i < 5; i++)
+            lifeDropActive[i] = false;
+        for (int i = 0; i < 10; i++)
+            explosionActive[i] = false;
     }
 }

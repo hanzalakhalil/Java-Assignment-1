@@ -21,7 +21,7 @@ public class HanzalaKhalil {
 
     static final int BULLET_WIDTH = 5;
     static final int BULLET_HEIGHT = 20;
-    static final int BULLET_SPEED = 10;
+    static final int BULLET_SPEED = 10minor fixes;
 
     static final int HALF_BULLET_WIDTH = BULLET_WIDTH / 2;
     static final int HALF_BULLET_HEIGHT = BULLET_HEIGHT / 2;

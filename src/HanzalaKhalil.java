@@ -21,6 +21,7 @@ public class HanzalaKhalil {
 
     static final int BULLET_WIDTH = 5;
     static final int BULLET_HEIGHT = 20;
+    static final int BULLET_SPEED = 10;
 
     static final int HALF_BULLET_WIDTH = BULLET_WIDTH / 2;
     static final int HALF_BULLET_HEIGHT = BULLET_HEIGHT / 2;
@@ -30,6 +31,7 @@ public class HanzalaKhalil {
 
     static final double ENEMY_SHOOT_CHANCE = 0.001;
     static final double LIFE_DROP_CHANCE = 0.20;
+
 
     static int[] enemyShootCounter = { 0, 0, 0, 0, 0, 0, 0, 0 };
     static int interceptorShootCounter = 0;
@@ -291,7 +293,7 @@ public class HanzalaKhalil {
 
                 if (bulletDirection[i]) {
                     StdDraw.picture(bulletX[i], bulletY[i], "../assets/bullet.png", BULLET_WIDTH, BULLET_HEIGHT);
-                    bulletY[i] += BULLET_HEIGHT;
+                    bulletY[i] += BULLET_SPEED;
                     if (bulletY[i] > 800) {
                         bulletActive[i] = false;
                     }
@@ -299,7 +301,7 @@ public class HanzalaKhalil {
                 } else {
                     StdDraw.picture(bulletX[i], bulletY[i], "../assets/enemyBullet.png", BULLET_WIDTH,
                             BULLET_HEIGHT);
-                    bulletY[i] -= BULLET_HEIGHT;
+                    bulletY[i] -= BULLET_SPEED;
                     if (bulletY[i] < 0) {
                         bulletActive[i] = false;
                     }

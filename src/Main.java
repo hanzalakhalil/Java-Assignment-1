@@ -436,7 +436,6 @@ public class Main{
 
                             bulletActive[i] = false;
                             lives--;
-                            System.out.println("Ouch! Lives left: " + lives);
                             continue;
                         }
                     }

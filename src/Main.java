@@ -134,6 +134,7 @@ public class Main {
                 typedKey = StdDraw.nextKeyTyped();
                 switch (typedKey) {
                     case '\n': // ENTER key to begin
+                        resetGame();
                         playGame();
                         break;
                     case 'a', 'A': // Decrease framerate
@@ -362,7 +363,7 @@ public class Main {
                     enemyX[i] -= normalizedEnemySpeed;
                 }
 
-                // AI Shooting: Divide chance by FPS to keep probability consistent per second
+                // Enemy Shooting: Divide chance by FPS to keep probability consistent per second
                 double adjustedShootChance = TARGET_SHOOT_CHANCE_PER_SEC / FPS;
 
                 if (Math.random() < adjustedShootChance && enemyShootCounter[i] == 0) {
